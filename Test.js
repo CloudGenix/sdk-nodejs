@@ -17,8 +17,9 @@ function menu() {
     console.log("  cls              clear console");
     console.log("  show             show commands");
     console.log("                   | token   tenant_id   versions   endpoints");
+    console.log("                   | site_id   element_id   interface_id   policy_set_id");
     console.log("  set <cmd> <val>  set values");
-    console.log("                   | site_id   element_id");
+    console.log("                   | site_id   element_id   interface_id   policy_set_id");
     console.log("  get <cmd>        retrieve objects");
     console.log("                   | contexts   sites   elements   interfaces   ifstatus");
     console.log("                   | wans   lans   appdefs   policysets   policyrules");
@@ -133,6 +134,22 @@ function processCommands(sdk) {
                     console.log(JSON.stringify(sdk.getAllEndpoints()));
                     break;
 
+                case "show site_id":
+                    console.log(siteId);
+                    break;
+
+                case "show element_id":
+                    console.log(elementId);
+                    break;
+
+                case "show interface_id":
+                    console.log(interfaceId);
+                    break;
+
+                case "show policy_set_id":
+                    console.log(policySetId);
+                    break;
+                                        
                 // </editor-fold>
 
                 // <editor-fold desc="Get Commands">
