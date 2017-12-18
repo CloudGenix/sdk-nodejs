@@ -1,3 +1,19 @@
+/*
+
+    CloudGenix Controller SDK
+    (c) 2017 CloudGenix, Inc.
+    All Rights Reserved
+
+    https://www.cloudgenix.com
+
+    This SDK is released under the MIT license.
+    For support, please contact us on:
+
+        NetworkToCode Slack channel #cloudgenix: http://slack.networktocode.com
+        Email: developers@cloudgenix.com
+
+ */
+
 //
 // Test.js
 //
@@ -149,7 +165,7 @@ function processCommands(sdk) {
                 case "show policy_set_id":
                     console.log(policySetId);
                     break;
-                                        
+
                 // </editor-fold>
 
                 // <editor-fold desc="Get Commands">
