@@ -1,0 +1,31 @@
+{
+  "name": "cloudgenix",
+  "version": "1.0.0",
+  "description": "CloudGenix Controller SDK",
+  "main": "CloudGenixSdk.js",
+  "dependencies": {
+    "https": "^1.0.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "node Test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CloudGenix/sdk-nodejs.git"
+  },
+  "keywords": [
+    "sdn",
+    "sdwan",
+    "cloudgenix",
+    "wan",
+    "networking",
+    "appfabric"
+  ],
+  "author": "Joel Christner",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/CloudGenix/sdk-nodejs/issues"
+  },
+  "homepage": "https://github.com/CloudGenix/sdk-nodejs#readme"
+}
