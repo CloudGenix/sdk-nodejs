@@ -1,6 +1,6 @@
 {
   "name": "cloudgenix",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "CloudGenix Controller SDK",
   "main": "CloudGenixSdk.js",
   "dependencies": {
