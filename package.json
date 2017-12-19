@@ -4,6 +4,7 @@
   "description": "CloudGenix Controller SDK",
   "main": "CloudGenixSdk.js",
   "dependencies": {
+    "http": "^0.0.0",
     "https": "^1.0.0"
   },
   "devDependencies": {},
