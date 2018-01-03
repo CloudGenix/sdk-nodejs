@@ -22,10 +22,11 @@ The CloudGenix Controller is only accessible to CloudGenix customers with a vali
 Refer to the Test.js file for a full examination of consuming the SDK.  The SDK can be initialized and instantiated rather quickly:
 ``` 
 // start the environment
+$ npm install cloudgenix
 $ node
 
 // include the SDK
-> CgSdk = require("./CloudGenixSdk.js");
+> CgSdk = require("cloudgenix");
 [Function: CloudGenixSdk]
 
 // create a default callback for enumerating data and error responses
