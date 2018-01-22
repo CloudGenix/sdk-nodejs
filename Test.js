@@ -31,6 +31,8 @@ function menu() {
     console.log("  help             help, this menu");
     console.log("  q                quit");
     console.log("  cls              clear console");
+    console.log("  login            login to the controller");
+    console.log("  logout           logout of the controller");
     console.log("  show             show commands");
     console.log("                   | token   tenant_id   versions   endpoints");
     console.log("                   | site_id   element_id   interface_id   policy_set_id");
@@ -41,14 +43,6 @@ function menu() {
     console.log("                   | wans   lans   appdefs   policysets   policyrules");
     console.log("                   | seczones   siteseczones   secpolsets   secpolrules");
     console.log("                   | sitewanifs   topology   snmpagents");
-    console.log("  metrics <cmd>    retrieve metrics");
-    console.log("                   | clear   show   build   addmetric   addfilter   submit");
-    console.log("  topn <cmd>       retrieve top N statistics");
-    console.log("                   | clear   show   build   addfilter   submit");
-    console.log("  flows <cmd>      retrieve flows");
-    console.log("                   | clear   show   build   addfilter   submit");
-    console.log("  events <cmd>     retrieve events");
-    console.log("                   | clear   show   build   submit   summary");
     console.log("");
 }
 
@@ -60,8 +54,6 @@ function processCommands(sdk) {
     var elementId = null;
     var interfaceId = null;
     var policySetId = null;
-
-    var metricsQuery = null;
 
     var stdin = process.openStdin();
 
@@ -128,8 +120,12 @@ function processCommands(sdk) {
                     console.API.clear();
                     break;
 
+                case "login":
+                    sdk.login().then(success, failure);
+                    break;
+
                 case "logout":
-                    sdk.logout(cb);
+                    sdk.logout().then(success, failure);;
                     break;
 
                 // <editor-fold desc="Show Commands">
@@ -171,71 +167,71 @@ function processCommands(sdk) {
                 // <editor-fold desc="Get Commands">
 
                 case "get contexts":
-                    sdk.getContexts(cb);
+                    sdk.getContexts().then(success, failure);
                     break;
 
                 case "get sites":
-                    sdk.getSites(cb);
+                    sdk.getSites().then(success, failure);
                     break;
 
                 case "get elements":
-                    sdk.getElements(cb);
+                    sdk.getElements().then(success, failure);
                     break;
 
                 case "get interfaces":
-                    sdk.getElementInterfaces(siteId, elementId, cb);
+                    sdk.getElementInterfaces(siteId, elementId).then(success, failure);
                     break;
 
                 case "get ifstatus":
-                    sdk.getElementInterfaceStatus(siteId, elementId, interfaceId, cb);
+                    sdk.getElementInterfaceStatus(siteId, elementId, interfaceId).then(success, failure);
                     break;
 
                 case "get wans":
-                    sdk.getWanNetworks(cb);
+                    sdk.getWanNetworks().then(success, failure);
                     break;
 
                 case "get lans":
-                    sdk.getLanNetworks(cb);
+                    sdk.getLanNetworks(siteId).then(success, failure);
                     break;
 
                 case "get appdefs":
-                    sdk.getAppDefs(cb);
+                    sdk.getAppDefs().then(success, failure);
                     break;
 
                 case "get policysets":
-                    sdk.getPolicySets(cb);
+                    sdk.getPolicySets().then(success, failure);
                     break;
 
                 case "get policyrules":
-                    sdk.getPolicyRules(policySetId, cb);
+                    sdk.getPolicyRules(policySetId).then(success, failure);
                     break;
 
                 case "get seczones":
-                    sdk.getSecurityZones(cb);
+                    sdk.getSecurityZones().then(success, failure);
                     break;
 
                 case "get siteseczones":
-                    sdk.getSiteSecurityZones(siteId, cb);
+                    sdk.getSiteSecurityZones(siteId).then(success, failure);
                     break;
 
                 case "get secpolsets":
-                    sdk.getSecurityPolicySets(cb);
+                    sdk.getSecurityPolicySets().then(success, failure);
                     break;
 
                 case "get secpolrules":
-                    sdk.getSecurityPolicyRules(policySetId, cb);
+                    sdk.getSecurityPolicyRules(policySetId).then(success, failure);
                     break;
 
                 case "get sitewanifs":
-                    sdk.getSiteWanInterfaces(siteId, cb);
+                    sdk.getSiteWanInterfaces(siteId).then(success, failure);
                     break;
 
                 case "get topology":
-                    sdk.getSiteTopology(siteId, cb);
+                    sdk.getSiteTopology(siteId).then(success, failure);
                     break;
 
                 case "get snmpagents":
-                    sdk.getSnmpAgents(siteId, elementId, cb);
+                    sdk.getSnmpAgents(siteId, elementId).then(success, failure);
                     break;
 
                 // </editor-fold>
@@ -247,25 +243,17 @@ function processCommands(sdk) {
     });
 }
 
-function cb(data, err) {
-    if (data) {
-        console.log("Data: " + data);
-    }
-    else {
-        console.log("Error: " + err);
-    }
+function success(result) {
+    console.log("Success: " + result);
+}
+
+function failure(err) {
+    console.log("Error: " + err);
 }
 
 //<editor-fold desc="Test">
 
-let sdk = new CgSdk("demo@cloudgenix.com", "demo@cloudgenix.com", true, function(data, err) {
-    if (data) {
-        console.log("Successfully logged in");
-        processCommands(sdk);
-    }
-    else {
-        throw "Unable to login";
-    }
-});
+let sdk = new CgSdk("demo@cloudgenix.com", "demo@cloudgenix.com", true);
+processCommands(sdk);
 
 //</editor-fold>
