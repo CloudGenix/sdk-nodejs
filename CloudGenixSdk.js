@@ -22,10 +22,9 @@ class CloudGenixSdk {
 
     // <editor-fold desc="Constructors and Factories">
 
-    constructor(email, password, debug, callback) {
+    constructor(email, password, debug) {
         if (!email || 0 === email.length) throw "Email is empty";
         if (!password || 0 === password.length) throw "Password is empty";
-        if (!callback) throw "Callback is empty";
 
         this._email = email;
         this._password = password;
@@ -40,67 +39,75 @@ class CloudGenixSdk {
 
         this.tenantId = null;
         this.authToken = null;
+        this._loggedIn = false;
 
         this._endpointManager = new EndpointManager();
         this._log("CloudGenix SDK initialized with email " + this._email + " host " + this._hostname + ":" + this._port);
+    }
 
+    login() {
         var self = this;
-        this._login(function(data, err) {
-            if (data) {
-                self._log("CloudGenix SDK login succeeded");
-                self._retrieveProfile(function(data, err) {
-                    if (data) {
-                        self._log("CloudGenix SDK retrieved tenant ID: " + self.tenantId);
-                        self._retrievePermissions(function(data, err) {
-                            if (data) {
-                                self._log("CloudGenix SDK retrieved permissions");
-                                callback(true, null);
-                            }
-                            else {
-                                throw "Unable to retrieve permissions";
-                            }
+
+        return new Promise(function(resolve, reject) {
+            self._login(function(data, err) {
+                if (data) {
+                    self._log("CloudGenix SDK login succeeded");
+                    self._retrieveProfile(function(data, err) {
+                        if (data) {
+                            self._log("CloudGenix SDK retrieved tenant ID: " + self.tenantId);
+                            self._retrievePermissions(function(data, err) {
+                                if (data) {
+                                    self._log("CloudGenix SDK retrieved permissions");
+                                    self._loggedIn = true;
+                                    resolve(true);
+                                }
+                                else {
+                                    reject(Error("Unable to retrieve permissions"));
+                                }
+                            });
                         }
-                        );
-                    }
-                    else {
-                        throw "Unable to retrieve tenant ID";
-                    }
+                        else {
+                            reject(Error("Unable to retrieve tenant ID"));
+                        }
+                    });
                 }
-                );
-            }
-            else {
-                throw "Unable to login to controller";
-            }
-        }
-        );
+                else {
+                    reject(Error("Unable to login to controller"));
+                }
+            });
+        });
     }
 
     // </editor-fold>
 
     // <editor-fold desc="Public Methods">
 
-    logout(callback) {
+    logout() {
+        if (!self._loggedIn) throw "Please login() first";
         var self = this;
-        this._restRequest(
-            "GET",
-            this._endpoints.getEndpoint("logout"),
-            this._hostname,
-            this._port,
-            this._authHeaders,
-            "application/json",
-            null,
-            this._debug,
-            function(data, err) {
-                if (data) {
-                    self._log("logout response data: " + data);
-                    callback(true, null);
+
+        return new Promise(function (resolve, reject) {
+            self._restRequest(
+                "GET",
+                this._endpoints.getEndpoint("logout"),
+                this._hostname,
+                this._port,
+                this._authHeaders,
+                "application/json",
+                null,
+                this._debug,
+                function(data, err) {
+                    if (data) {
+                        self._log("logout response data: " + data);
+                        resolve(true);
+                    }
+                    else {
+                        self._log("logout unable to logout: " + err);
+                        reject(Error("Unable to logout"));
+                    }
                 }
-                else {
-                    self._log("logout unable to logout: " + err);
-                    callback(null, true);
-                }
-            }
-        );
+            );
+        });
     }
 
     getAllVersions() {
@@ -111,472 +118,541 @@ class CloudGenixSdk {
         return this._endpoints.getAllEndpoints();
     }
 
-    getContexts(callback) {
+    getContexts() {
         var self = this;
-        var url = this._endpoints.getEndpoint("networkcontexts");
+        if (!self._loggedIn) throw "Please login() first";
+
+        var url = self._endpoints.getEndpoint("networkcontexts");
         url = url.replace("%s", self.tenantId);
 
-        this._restRequest(
-            "GET",
-            url,
-            this._hostname,
-            this._port,
-            this._authHeaders,
-            "application/json",
-            null,
-            this._debug,
-            function(data, err) {
-                if (data) {
-                    self._log("getContexts response data: " + data);
-                    callback(data, null);
+        return new Promise(function (resolve, reject) {
+            self._restRequest(
+                "GET",
+                url,
+                self._hostname,
+                self._port,
+                self._authHeaders,
+                "application/json",
+                null,
+                self._debug,
+                function (data, err) {
+                    if (data) {
+                        self._log("getContexts response data: " + data);
+                        resolve(data);
+                    }
+                    else {
+                        self._log("getContexts unable to retrieve contexts: " + err);
+                        reject(Error(err));
+                    }
                 }
-                else {
-                    self._log("getContexts unable to retrieve contexts: " + err);
-                    callback(null, err);
-                }
-            }
-        );
+            );
+        });
     }
 
-    getSites(callback) {
+    getSites() {
         var self = this;
-        var url = this._endpoints.getEndpoint("sites");
+        if (!self._loggedIn) throw "Please login() first";
+
+        var url = self._endpoints.getEndpoint("sites");
         url = url.replace("%s", self.tenantId);
 
-        this._restRequest(
-            "GET",
-            url,
-            this._hostname,
-            this._port,
-            this._authHeaders,
-            "application/json",
-            null,
-            this._debug,
-            function(data, err) {
-                if (data) {
-                    self._log("getSites response data: " + data);
-                    callback(data, null);
+        return new Promise(function (resolve, reject) {
+            self._restRequest(
+                "GET",
+                url,
+                self._hostname,
+                self._port,
+                self._authHeaders,
+                "application/json",
+                null,
+                self._debug,
+                function(data, err) {
+                    if (data) {
+                        self._log("getSites response data: " + data);
+                        resolve(data);
+                    }
+                    else {
+                        self._log("getSites unable to retrieve sites: " + err);
+                        reject(Error(err));
+                    }
                 }
-                else {
-                    self._log("getSites unable to retrieve sites: " + err);
-                    callback(null, err);
-                }
-            }
-        );
+            );
+        });
     }
 
-    getElements(callback) {
+    getElements() {
         var self = this;
-        var url = this._endpoints.getEndpoint("elements");
+        if (!self._loggedIn) throw "Please login() first";
+
+        var url = self._endpoints.getEndpoint("elements");
         url = url.replace("%s", self.tenantId);
 
-        this._restRequest(
-            "GET",
-            url,
-            this._hostname,
-            this._port,
-            this._authHeaders,
-            "application/json",
-            null,
-            this._debug,
-            function(data, err) {
-                if (data) {
-                    self._log("getElements response data: " + data);
-                    callback(data, null);
+        return new Promise(function (resolve, reject) {
+            self._restRequest(
+                "GET",
+                url,
+                self._hostname,
+                self._port,
+                self._authHeaders,
+                "application/json",
+                null,
+                self._debug,
+                function(data, err) {
+                    if (data) {
+                        self._log("getElements response data: " + data);
+                        resolve(data);
+                    }
+                    else {
+                        self._log("getElements unable to retrieve elements: " + err);
+                        reject(Error(err));
+                    }
                 }
-                else {
-                    self._log("getElements unable to retrieve elements: " + err);
-                    callback(null, err);
-                }
-            }
-        );
+            );
+        });
     }
 
-    getElementInterfaces(siteId, elementId, callback) {
+    getElementInterfaces(siteId, elementId) {
         if (!siteId) throw "Site ID must not be empty";
         if (!elementId) throw "Element ID must not be empty";
 
         var self = this;
-        var url = this._endpoints.getEndpoint("interfaces");
+        if (!self._loggedIn) throw "Please login() first";
+
+        var url = self._endpoints.getEndpoint("interfaces");
         url = url.replace("%s", self.tenantId);
         url = url.replace("%s", siteId);
         url = url.replace("%s", elementId);
 
-        this._restRequest(
-            "GET",
-            url,
-            this._hostname,
-            this._port,
-            this._authHeaders,
-            "application/json",
-            null,
-            this._debug,
-            function(data, err) {
-                if (data) {
-                    self._log("getElements response data: " + data);
-                    callback(data, null);
+        return new Promise(function (resolve, reject) {
+            self._restRequest(
+                "GET",
+                url,
+                self._hostname,
+                self._port,
+                self._authHeaders,
+                "application/json",
+                null,
+                self._debug,
+                function(data, err) {
+                    if (data) {
+                        self._log("getElementInterfaces response data: " + data);
+                        resolve(data);
+                    }
+                    else {
+                        self._log("getElementInterfaces unable to retrieve elements: " + err);
+                        reject(Error(err));
+                    }
                 }
-                else {
-                    self._log("getElementInterfaces unable to retrieve element interfaces: " + err);
-                    callback(null, err);
-                }
-            }
-        );
+            );
+        });
     }
 
-    getElementInterfaceStatus(siteId, elementId, interfaceId, callback) {
+    getElementInterfaceStatus(siteId, elementId, interfaceId) {
         if (!siteId) throw "Site ID must not be empty";
         if (!elementId) throw "Element ID must not be empty";
         if (!interfaceId) throw "Interface ID must not be empty";
 
         var self = this;
-        var url = this._endpoints.getEndpoint("status_interfaces");
+        if (!self._loggedIn) throw "Please login() first";
+
+        var url = self._endpoints.getEndpoint("status_interfaces");
         url = url.replace("%s", self.tenantId);
         url = url.replace("%s", siteId);
         url = url.replace("%s", elementId);
         url = url.replace("%s", interfaceId);
 
-        this._restRequest(
-            "GET",
-            url,
-            this._hostname,
-            this._port,
-            this._authHeaders,
-            "application/json",
-            null,
-            this._debug,
-            function(data, err) {
-                if (data) {
-                    self._log("getElementInterfaceStatus response data: " + data);
-                    callback(data, null);
+        return new Promise(function (resolve, reject) {
+            self._restRequest(
+                "GET",
+                url,
+                self._hostname,
+                self._port,
+                self._authHeaders,
+                "application/json",
+                null,
+                self._debug,
+                function(data, err) {
+                    if (data) {
+                        self._log("getElementInterfaceStatus response data: " + data);
+                        resolve(data);
+                    }
+                    else {
+                        self._log("getElementInterfaceStatus unable to retrieve element interface status: " + err);
+                        reject(Error(err));
+                    }
                 }
-                else {
-                    self._log("getElementInterfaceStatus unable to retrieve element interface status: " + err);
-                    callback(null, err);
-                }
-            }
-        );
+            );
+        });
     }
 
-    getWanNetworks(callback) {
+    getWanNetworks() {
         var self = this;
-        var url = this._endpoints.getEndpoint("wannetworks");
+        if (!self._loggedIn) throw "Please login() first";
+
+        var url = self._endpoints.getEndpoint("wannetworks");
         url = url.replace("%s", self.tenantId);
 
-        this._restRequest(
-            "GET",
-            url,
-            this._hostname,
-            this._port,
-            this._authHeaders,
-            "application/json",
-            null,
-            this._debug,
-            function(data, err) {
-                if (data) {
-                    self._log("getWanNetworks response data: " + data);
-                    callback(data, null);
+        return new Promise(function (resolve, reject) {
+            self._restRequest(
+                "GET",
+                url,
+                self._hostname,
+                self._port,
+                self._authHeaders,
+                "application/json",
+                null,
+                self._debug,
+                function(data, err) {
+                    if (data) {
+                        self._log("getWanNetworks response data: " + data);
+                        resolve(data);
+                    }
+                    else {
+                        self._log("getWanNetworks unable to retrieve WANs: " + err);
+                        reject(Error(err));
+                    }
                 }
-                else {
-                    self._log("getWanNetworks unable to retrieve WANs: " + err);
-                    callback(null, err);
-                }
-            }
-        );
+            );
+        });
     }
 
-    getLanNetworks(callback) {
+    getLanNetworks(siteId) {
+        if (!siteId) throw "Site ID must not be empty";
+
         var self = this;
-        var url = this._endpoints.getEndpoint("lannetworks");
+        if (!self._loggedIn) throw "Please login() first";
+
+        var url = self._endpoints.getEndpoint("lannetworks");
+        url = url.replace("%s", self.tenantId);
+        url = url.replace("%s", siteId);
+
+        return new Promise(function (resolve, reject) {
+            self._restRequest(
+                "GET",
+                url,
+                self._hostname,
+                self._port,
+                self._authHeaders,
+                "application/json",
+                null,
+                self._debug,
+                function(data, err) {
+                    if (data) {
+                        self._log("getLanNetworks response data: " + data);
+                        resolve(data);
+                    }
+                    else {
+                        self._log("getLanNetworks unable to retrieve LANs: " + err);
+                        reject(Error(err));
+                    }
+                }
+            );
+        });
+    }
+
+    getAppDefs() {
+        var self = this;
+        if (!self._loggedIn) throw "Please login() first";
+
+        var url = self._endpoints.getEndpoint("appdefs");
         url = url.replace("%s", self.tenantId);
 
-        this._restRequest(
-            "GET",
-            url,
-            this._hostname,
-            this._port,
-            this._authHeaders,
-            "application/json",
-            null,
-            this._debug,
-            function(data, err) {
-                if (data) {
-                    self._log("getLanNetworks response data: " + data);
-                    callback(data, null);
+        return new Promise(function (resolve, reject) {
+            self._restRequest(
+                "GET",
+                url,
+                self._hostname,
+                self._port,
+                self._authHeaders,
+                "application/json",
+                null,
+                self._debug,
+                function(data, err) {
+                    if (data) {
+                        self._log("getAppDefs response data: " + data);
+                        resolve(data);
+                    }
+                    else {
+                        self._log("getAppDefs unable to retrieve application definitions: " + err);
+                        reject(Error(err));
+                    }
                 }
-                else {
-                    self._log("getLanNetworks unable to retrieve LANs: " + err);
-                    callback(null, err);
-                }
-            }
-        );
+            );
+        });
     }
 
-    getAppDefs(callback) {
+    getPolicySets() {
         var self = this;
-        var url = this._endpoints.getEndpoint("appdefs");
+        if (!self._loggedIn) throw "Please login() first";
+
+        var url = self._endpoints.getEndpoint("policysets");
         url = url.replace("%s", self.tenantId);
 
-        this._restRequest(
-            "GET",
-            url,
-            this._hostname,
-            this._port,
-            this._authHeaders,
-            "application/json",
-            null,
-            this._debug,
-            function(data, err) {
-                if (data) {
-                    self._log("getAppDefs response data: " + data);
-                    callback(data, null);
+        return new Promise(function (resolve, reject) {
+            self._restRequest(
+                "GET",
+                url,
+                self._hostname,
+                self._port,
+                self._authHeaders,
+                "application/json",
+                null,
+                self._debug,
+                function(data, err) {
+                    if (data) {
+                        self._log("getPolicySets response data: " + data);
+                        resolve(data);
+                    }
+                    else {
+                        self._log("getPolicySets unable to retrieve policy sets: " + err);
+                        reject(Error(err));
+                    }
                 }
-                else {
-                    self._log("getAppDefs unable to retrieve application definitions: " + err);
-                    callback(null, err);
-                }
-            }
-        );
+            );
+        });
     }
 
-    getPolicySets(callback) {
-        var self = this;
-        var url = this._endpoints.getEndpoint("policysets");
-        url = url.replace("%s", self.tenantId);
-
-        this._restRequest(
-            "GET",
-            url,
-            this._hostname,
-            this._port,
-            this._authHeaders,
-            "application/json",
-            null,
-            this._debug,
-            function(data, err) {
-                if (data) {
-                    self._log("getPolicySets response data: " + data);
-                    callback(data, null);
-                }
-                else {
-                    self._log("getPolicySets unable to retrieve policy sets: " + err);
-                    callback(null, err);
-                }
-            }
-        );
-    }
-
-    getPolicyRules(policySetId, callback) {
+    getPolicyRules(policySetId) {
         if (!policySetId) throw "Policy set ID must not be empty";
 
         var self = this;
-        var url = this._endpoints.getEndpoint("policyrules");
+        if (!self._loggedIn) throw "Please login() first";
+
+        var url = self._endpoints.getEndpoint("policyrules");
         url = url.replace("%s", self.tenantId);
         url = url.replace("%s", policySetId);
 
-        this._restRequest(
-            "GET",
-            url,
-            this._hostname,
-            this._port,
-            this._authHeaders,
-            "application/json",
-            null,
-            this._debug,
-            function(data, err) {
-                if (data) {
-                    self._log("getPolicyRules response data: " + data);
-                    callback(data, null);
+        return new Promise(function (resolve, reject) {
+            self._restRequest(
+                "GET",
+                url,
+                self._hostname,
+                self._port,
+                self._authHeaders,
+                "application/json",
+                null,
+                self._debug,
+                function(data, err) {
+                    if (data) {
+                        self._log("getPolicyRules response data: " + data);
+                        resolve(data);
+                    }
+                    else {
+                        self._log("getPolicyRules unable to retrieve policy rules: " + err);
+                        reject(Error(err));
+                    }
                 }
-                else {
-                    self._log("getPolicyRules unable to retrieve policy rules: " + err);
-                    callback(null, err);
-                }
-            }
-        );
+            );
+        });
     }
 
-    getSecurityZones(callback) {
+    getSecurityZones() {
         var self = this;
-        var url = this._endpoints.getEndpoint("securityzones");
+        if (!self._loggedIn) throw "Please login() first";
+
+        var url = self._endpoints.getEndpoint("securityzones");
         url = url.replace("%s", self.tenantId);
 
-        this._restRequest(
-            "GET",
-            url,
-            this._hostname,
-            this._port,
-            this._authHeaders,
-            "application/json",
-            null,
-            this._debug,
-            function(data, err) {
-                if (data) {
-                    self._log("getSecurityZones response data: " + data);
-                    callback(data, null);
+        return new Promise(function (resolve, reject) {
+            self._restRequest(
+                "GET",
+                url,
+                self._hostname,
+                self._port,
+                self._authHeaders,
+                "application/json",
+                null,
+                self._debug,
+                function(data, err) {
+                    if (data) {
+                        self._log("getSecurityZones response data: " + data);
+                        resolve(data);
+                    }
+                    else {
+                        self._log("getSecurityZones unable to retrieve security zones: " + err);
+                        reject(Error(err));
+                    }
                 }
-                else {
-                    self._log("getSecurityZones unable to retrieve security zones: " + err);
-                    callback(null, err);
-                }
-            }
-        );
+            );
+        });
     }
 
-    getSiteSecurityZones(siteId, callback) {
+    getSiteSecurityZones(siteId) {
         if (!siteId) throw "Site ID must not be empty";
 
         var self = this;
-        var url = this._endpoints.getEndpoint("sitesecurityzones");
+        if (!self._loggedIn) throw "Please login() first";
+
+        var url = self._endpoints.getEndpoint("sitesecurityzones");
         url = url.replace("%s", self.tenantId);
         url = url.replace("%s", siteId);
 
-        this._restRequest(
-            "GET",
-            url,
-            this._hostname,
-            this._port,
-            this._authHeaders,
-            "application/json",
-            null,
-            this._debug,
-            function(data, err) {
-                if (data) {
-                    self._log("getSiteSecurityZones response data: " + data);
-                    callback(data, null);
+        return new Promise(function (resolve, reject) {
+            self._restRequest(
+                "GET",
+                url,
+                self._hostname,
+                self._port,
+                self._authHeaders,
+                "application/json",
+                null,
+                self._debug,
+                function(data, err) {
+                    if (data) {
+                        self._log("getSiteSecurityZones response data: " + data);
+                        resolve(data);
+                    }
+                    else {
+                        self._log("getSiteSecurityZones unable to retrieve security zones: " + err);
+                        reject(Error(err));
+                    }
                 }
-                else {
-                    self._log("getSiteSecurityZones unable to retrieve site security zones: " + err);
-                    callback(null, err);
-                }
-            }
-        );
+            );
+        });
     }
 
-    getSecurityPolicySets(callback) {
+    getSecurityPolicySets() {
         var self = this;
-        var url = this._endpoints.getEndpoint("securitypolicysets");
+        if (!self._loggedIn) throw "Please login() first";
+
+        var url = self._endpoints.getEndpoint("securitypolicysets");
         url = url.replace("%s", self.tenantId);
 
-        this._restRequest(
-            "GET",
-            url,
-            this._hostname,
-            this._port,
-            this._authHeaders,
-            "application/json",
-            null,
-            this._debug,
-            function(data, err) {
-                if (data) {
-                    self._log("getSecurityPolicySets response data: " + data);
-                    callback(data, null);
+        return new Promise(function (resolve, reject) {
+            self._restRequest(
+                "GET",
+                url,
+                self._hostname,
+                self._port,
+                self._authHeaders,
+                "application/json",
+                null,
+                self._debug,
+                function(data, err) {
+                    if (data) {
+                        self._log("getSecurityPolicySets response data: " + data);
+                        resolve(data);
+                    }
+                    else {
+                        self._log("getSecurityPolicySets unable to retrieve security policy sets: " + err);
+                        reject(Error(err));
+                    }
                 }
-                else {
-                    self._log("getSecurityPolicySets unable to retrieve security policy sets: " + err);
-                    callback(null, err);
-                }
-            }
-        );
+            );
+        });
     }
 
-    getSecurityPolicyRules(secPolicySetId, callback) {
+    getSecurityPolicyRules(secPolicySetId) {
         if (!secPolicySetId) throw "Security policy set ID must not be empty";
 
         var self = this;
-        var url = this._endpoints.getEndpoint("securitypolicyrules");
+        if (!self._loggedIn) throw "Please login() first";
+
+        var url = self._endpoints.getEndpoint("securitypolicyrules");
         url = url.replace("%s", self.tenantId);
         url = url.replace("%s", secPolicySetId);
 
-        this._restRequest(
-            "GET",
-            url,
-            this._hostname,
-            this._port,
-            this._authHeaders,
-            "application/json",
-            null,
-            this._debug,
-            function(data, err) {
-                if (data) {
-                    self._log("getSecurityPolicyRules response data: " + data);
-                    callback(data, null);
+        return new Promise(function (resolve, reject) {
+            self._restRequest(
+                "GET",
+                url,
+                self._hostname,
+                self._port,
+                self._authHeaders,
+                "application/json",
+                null,
+                self._debug,
+                function(data, err) {
+                    if (data) {
+                        self._log("getSecurityPolicyRules response data: " + data);
+                        resolve(data);
+                    }
+                    else {
+                        self._log("getSecurityPolicyRules unable to retrieve security policy rules: " + err);
+                        reject(Error(err));
+                    }
                 }
-                else {
-                    self._log("getSecurityPolicyRules unable to retrieve security policy rules: " + err);
-                    callback(null, err);
-                }
-            }
-        );
+            );
+        });
     }
 
-    getSiteWanInterfaces(siteId, callback) {
+    getSiteWanInterfaces(siteId) {
         if (!siteId) throw "Site ID must not be empty";
 
         var self = this;
-        var url = this._endpoints.getEndpoint("waninterfaces");
+        if (!self._loggedIn) throw "Please login() first";
+
+        var url = self._endpoints.getEndpoint("waninterfaces");
         url = url.replace("%s", self.tenantId);
         url = url.replace("%s", siteId);
 
-        this._restRequest(
-            "GET",
-            url,
-            this._hostname,
-            this._port,
-            this._authHeaders,
-            "application/json",
-            null,
-            this._debug,
-            function(data, err) {
-                if (data) {
-                    self._log("getSiteWanInterfaces response data: " + data);
-                    callback(data, null);
+        return new Promise(function (resolve, reject) {
+            self._restRequest(
+                "GET",
+                url,
+                self._hostname,
+                self._port,
+                self._authHeaders,
+                "application/json",
+                null,
+                self._debug,
+                function(data, err) {
+                    if (data) {
+                        self._log("getSiteWanInterfaces response data: " + data);
+                        resolve(data);
+                    }
+                    else {
+                        self._log("getSiteWanInterfaces unable to retrieve site WAN interfaces: " + err);
+                        reject(Error(err));
+                    }
                 }
-                else {
-                    self._log("getSiteWanInterfaces unable to retrieve site WAN interfaces: " + err);
-                    callback(null, err);
-                }
-            }
-        );
+            );
+        });
     }
 
-    getSnmpAgents(siteId, elementId, callback) {
+    getSnmpAgents(siteId, elementId) {
         if (!siteId) throw "Site ID must not be empty";
         if (!elementId) throw "Element ID must not be empty";
 
         var self = this;
-        var url = this._endpoints.getEndpoint("snmpagents");
+        if (!self._loggedIn) throw "Please login() first";
+
+        var url = self._endpoints.getEndpoint("snmpagents");
         url = url.replace("%s", self.tenantId);
         url = url.replace("%s", siteId);
         url = url.replace("%s", elementId);
 
-        this._restRequest(
-            "GET",
-            url,
-            this._hostname,
-            this._port,
-            this._authHeaders,
-            "application/json",
-            null,
-            this._debug,
-            function(data, err) {
-                if (data) {
-                    self._log("getSnmpAgents response data: " + data);
-                    callback(data, null);
+        return new Promise(function (resolve, reject) {
+            self._restRequest(
+                "GET",
+                url,
+                self._hostname,
+                self._port,
+                self._authHeaders,
+                "application/json",
+                null,
+                self._debug,
+                function(data, err) {
+                    if (data) {
+                        self._log("getSnmpAgents response data: " + data);
+                        resolve(data);
+                    }
+                    else {
+                        self._log("getSnmpAgents unable to retrieve SNMP agents: " + err);
+                        reject(Error(err));
+                    }
                 }
-                else {
-                    self._log("getSnmpAgents unable to retrieve SNMP agents: " + err);
-                    callback(null, err);
-                }
-            }
-        );
+            );
+        });
     }
 
-    getSiteTopology(siteId, callback) {
+    getSiteTopology(siteId) {
         if (!siteId) throw "Site ID must not be empty";
 
         var self = this;
-        var url = this._endpoints.getEndpoint("topology");
+        if (!self._loggedIn) throw "Please login() first";
+
+        var url = self._endpoints.getEndpoint("topology");
         url = url.replace("%s", self.tenantId);
         url = url.replace("%s", siteId);
 
@@ -584,142 +660,160 @@ class CloudGenixSdk {
         body["type"] = "basenet";
         body["nodes"] = [ siteId ];
 
-        this._restRequest(
-            "POST",
-            url,
-            this._hostname,
-            this._port,
-            this._authHeaders,
-            "application/json",
-            JSON.stringify(body),
-            this._debug,
-            function(data, err) {
-                if (data) {
-                    self._log("getSiteTopology response data: " + data);
-                    callback(data, null);
+        return new Promise(function (resolve, reject) {
+            self._restRequest(
+                "POST",
+                url,
+                self._hostname,
+                self._port,
+                self._authHeaders,
+                "application/json",
+                JSON.stringify(body),
+                self._debug,
+                function(data, err) {
+                    if (data) {
+                        self._log("getSiteTopology response data: " + data);
+                        resolve(data);
+                    }
+                    else {
+                        self._log("getSiteTopology unable to retrieve site topology: " + err);
+                        reject(Error(err));
+                    }
                 }
-                else {
-                    self._log("getSiteTopology unable to retrieve site topology: " + err);
-                    callback(null, err);
-                }
-            }
-        );
+            );
+        });
     }
 
-    getMetrics(query, callback) {
+    getMetrics(query) {
         if (!query) throw "Query must not be empty";
 
         var self = this;
-        var url = this._endpoints.getEndpoint("metrics_monitor");
+        if (!self._loggedIn) throw "Please login() first";
+
+        var url = self._endpoints.getEndpoint("metrics_monitor");
         url = url.replace("%s", self.tenantId);
 
-        this._restRequest(
-            "POST",
-            url,
-            this._hostname,
-            this._port,
-            this._authHeaders,
-            "application/json",
-            JSON.stringify(query),
-            this._debug,
-            function(data, err) {
-                if (data) {
-                    self._log("getMetrics response data: " + data);
-                    callback(data, null);
+        return new Promise(function (resolve, reject) {
+            self._restRequest(
+                "POST",
+                url,
+                self._hostname,
+                self._port,
+                self._authHeaders,
+                "application/json",
+                JSON.stringify(query),
+                self._debug,
+                function(data, err) {
+                    if (data) {
+                        self._log("getMetrics response data: " + data);
+                        resolve(data);
+                    }
+                    else {
+                        self._log("getMetrics unable to retrieve metrics: " + err);
+                        reject(Error(err));
+                    }
                 }
-                else {
-                    self._log("getMetrics unable to retrieve metrics: " + err);
-                    callback(null, err);
-                }
-            }
-        );
+            );
+        });
     }
 
-    getTopN(query, callback) {
+    getTopN(query) {
         if (!query) throw "Query must not be empty";
 
         var self = this;
-        var url = this._endpoints.getEndpoint("topn_monitor");
+        if (!self._loggedIn) throw "Please login() first";
+
+        var url = self._endpoints.getEndpoint("topn_monitor");
         url = url.replace("%s", self.tenantId);
 
-        this._restRequest(
-            "POST",
-            url,
-            this._hostname,
-            this._port,
-            this._authHeaders,
-            "application/json",
-            JSON.stringify(query),
-            this._debug,
-            function(data, err) {
-                if (data) {
-                    self._log("getTopN response data: " + data);
-                    callback(data, null);
+        return new Promise(function (resolve, reject) {
+            self._restRequest(
+                "POST",
+                url,
+                self._hostname,
+                self._port,
+                self._authHeaders,
+                "application/json",
+                JSON.stringify(query),
+                self._debug,
+                function(data, err) {
+                    if (data) {
+                        self._log("getTopN response data: " + data);
+                        resolve(data);
+                    }
+                    else {
+                        self._log("getTopN unable to retrieve top N data: " + err);
+                        reject(Error(err));
+                    }
                 }
-                else {
-                    self._log("getTopN unable to retrieve top N data: " + err);
-                    callback(null, err);
-                }
-            }
-        );
+            );
+        });
     }
 
-    getFlows(query, callback) {
+    getFlows(query) {
         if (!query) throw "Query must not be empty";
 
         var self = this;
-        var url = this._endpoints.getEndpoint("flows_monitor");
+        if (!self._loggedIn) throw "Please login() first";
+
+        var url = self._endpoints.getEndpoint("flows_monitor");
         url = url.replace("%s", self.tenantId);
 
-        this._restRequest(
-            "POST",
-            url,
-            this._hostname,
-            this._port,
-            this._authHeaders,
-            "application/json",
-            JSON.stringify(query),
-            this._debug,
-            function(data, err) {
-                if (data) {
-                    self._log("getFlows response data: " + data);
-                    callback(data, null);
+        return new Promise(function (resolve, reject) {
+            self._restRequest(
+                "POST",
+                url,
+                self._hostname,
+                self._port,
+                self._authHeaders,
+                "application/json",
+                JSON.stringify(query),
+                self._debug,
+                function(data, err) {
+                    if (data) {
+                        self._log("getFlows response data: " + data);
+                        resolve(data);
+                    }
+                    else {
+                        self._log("getFlows unable to retrieve flows: " + err);
+                        reject(Error(err));
+                    }
                 }
-                else {
-                    self._log("getFlows unable to retrieve top N data: " + err);
-                    callback(null, err);
-                }
-            }
-        );
+            );
+        });
     }
 
-    getEvents(query, callback) {
+    getEvents(query) {
         if (!query) throw "Query must not be empty";
 
         var self = this;
-        var url = this._endpoints.getEndpoint("query_events");
+        if (!self._loggedIn) throw "Please login() first";
+
+        var url = self._endpoints.getEndpoint("query_events");
         url = url.replace("%s", self.tenantId);
 
-        this._restRequest(
-            "POST",
-            url,
-            this._hostname,
-            this._port,
-            this._authHeaders,
-            "application/json",
-            JSON.stringify(query),
-            this._debug,
-            function(data, err) {
-                if (data) {
-                    self._log("getEvents response data: " + data);
-                    callback(data, null);
+        return new Promise(function (resolve, reject) {
+            self._restRequest(
+                "POST",
+                url,
+                self._hostname,
+                self._port,
+                self._authHeaders,
+                "application/json",
+                JSON.stringify(query),
+                self._debug,
+                function(data, err) {
+                    if (data) {
+                        self._log("getEvents response data: " + data);
+                        resolve(data);
+                    }
+                    else {
+                        self._log("getEvents unable to retrieve events: " + err);
+                        reject(Error(err));
+                    }
                 }
-                else {
-                    self._log("getEvents unable to retrieve events: " + err);
-                    callback(null, err);
-                }
-            }
-        );
+            );
+        });
     }
 
     // </editor-fold>
