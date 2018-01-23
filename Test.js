@@ -125,7 +125,7 @@ function processCommands(sdk) {
                     break;
 
                 case "logout":
-                    sdk.logout().then(success, failure);;
+                    sdk.logout().then(success, failure);
                     break;
 
                 // <editor-fold desc="Show Commands">
