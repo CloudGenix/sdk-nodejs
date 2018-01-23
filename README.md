@@ -1,4 +1,4 @@
-  
+ 
 # CloudGenix Controller SDK in Javascript for NodeJS
 NodeJS software development kit and test application for the CloudGenix Controller.
 
@@ -10,6 +10,8 @@ The CloudGenix Controller is only accessible to CloudGenix customers with a vali
 
 ## New
 - Support for Javascript promise
+- Added optional 'id' parameter to several methods (for instance, to retrieve only an individual site, element, etc)
+- Various fixes
 
 ## Outstanding Items
 - Queries (metrics, top N, flow records) must be constructed manually and passed into appropriate methods
@@ -25,23 +27,27 @@ $ node
 > CgSdk = require("cloudgenix");
 [Function: CloudGenixSdk]
 
-// create simple success and failure callbacks for promises to enumerate data and error responses
+// create default success and failure handlers for enumeration
 > function success(result) { console.log("Success: " + result); };
 undefined
-> function failure(err) { console.log("Failure: " + err); };
-undefined
+> function failure(err) { console.log("Error: " + err); };
+undefined 
 
 // initialize the SDK and login
 > sdk = new CgSdk("demo@cloudgenix.com", "demo@cloudgenix.com", false);
-> sdk.login().then(success).then(failure);
+> sdk.login().then(success, failure);
 
 // perform your first API call
-> sdk.getSites().then(success).then(failure);
-> Data: {"_etag":0,"_content_length":"3173","_schema":0,"_created_on_utc":0,"_updated_on_utc":0,"_status_code":"200","_request_id":"1513104977242013899996721814543863209018","count":5,"items":[{"id":"14124967418110176", ... [reduced for brevity] ... 
+> sdk.getSites().then(success, failure); 
+> Data: {"_etag":0,"_content_length":"3173","_schema":0,"_created_on_utc":0,"_updated_on_utc":0,"_status_code":"200","_request_id":"1513104977242013899996721814543863209018","count":5,"items":[{"id":"14124967418110176", ...
+
+// some APIs allow you to retrieve an object by its ID
+> sdk.getSites("[site_id]").then(success, failure); 
+> Data: {"id":"14124967418110176","_etag":11,"_content_length":"659","_schema":2,"_created_on_utc":14124967418110177,"_updated_on_utc":15111302532530128,"_status_code":"200","_request_id":"1516730421562008900000023387484663434125",...
 
 // and another...
-> sdk.getSiteTopology().then(success).then(failure);
-> Data: {"type":"basenet","nodes":[{"id":"14124967418110176","_etag":0,"_content_length":"8107","_schema":0,"_created_on_utc":14124967418110177,"_updated_on_utc":0,"_status_code":"200","_request_id":"1513105335429012499995707288186023842012","tenant_id":"101","type":"SITE","name":"Atlanta DC","location":{"longitude":-84.39019775390625, ... [reduced for brevity] ...
+> sdk.getSiteTopology("[site_id]").then(success, failure);
+> Data: {"type":"basenet","nodes":[{"id":"14124967418110176","_etag":0,"_content_length":"8107","_schema":0,"_created_on_utc":14124967418110177,"_updated_on_utc":0,"_status_code":"200","_request_id":"1513105335429012499995707288186023842012","tenant_id":"101","type":"SITE","name":"Atlanta DC","location":{"longitude":-84.39019775390625, ...
 ```
 
 ## Queries
@@ -53,7 +59,7 @@ topnQuery["top_n"] = { "type": "app", "limit": 10 };
 topnQuery["filter"] = { "site": [ "[site_id]" ] };
 topnQuery["start_time"] = "2017-12-01T00:00:00.000Z";
 topnQuery["end_time"] = "2017-12-07T00:00:00.000Z";
-sdk.getTopN(topnQuery).then(success).then(failure);
+sdk.getTopN(topnQuery, cb);
 ```
 
 ## Version History

@@ -64,7 +64,7 @@ function processCommands(sdk) {
         if (!cmd) return;
         cmd = cmd.toString().trim();
 
-        if (cmd.startsWith("set ")) {
+        if (cmd.startsWith("set")) {
             // <editor-fold Desc="Set Variables">
 
             var args = cmd.split(" ");
@@ -125,7 +125,7 @@ function processCommands(sdk) {
                     break;
 
                 case "logout":
-                    sdk.logout().then(success, failure);;
+                    sdk.logout().then(success, failure);
                     break;
 
                 // <editor-fold desc="Show Commands">
