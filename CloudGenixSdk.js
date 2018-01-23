@@ -45,6 +45,10 @@ class CloudGenixSdk {
         this._log("CloudGenix SDK initialized with email " + this._email + " host " + this._hostname + ":" + this._port);
     }
 
+    // </editor-fold>
+
+    // <editor-fold desc="Public Methods">
+
     login() {
         var self = this;
 
@@ -77,10 +81,6 @@ class CloudGenixSdk {
             });
         });
     }
-
-    // </editor-fold>
-
-    // <editor-fold desc="Public Methods">
 
     logout() {
         if (!self._loggedIn) throw "Please login() first";
@@ -118,12 +118,13 @@ class CloudGenixSdk {
         return this._endpoints.getAllEndpoints();
     }
 
-    getContexts() {
+    getContexts(id) {
         var self = this;
         if (!self._loggedIn) throw "Please login() first";
 
         var url = self._endpoints.getEndpoint("networkcontexts");
         url = url.replace("%s", self.tenantId);
+        if (typeof(id) !== "undefined" && id !== null) url += "/" + id;
 
         return new Promise(function (resolve, reject) {
             self._restRequest(
@@ -149,12 +150,13 @@ class CloudGenixSdk {
         });
     }
 
-    getSites() {
+    getSites(id) {
         var self = this;
         if (!self._loggedIn) throw "Please login() first";
 
         var url = self._endpoints.getEndpoint("sites");
         url = url.replace("%s", self.tenantId);
+        if (typeof(id) !== "undefined" && id !== null) url += "/" + id;
 
         return new Promise(function (resolve, reject) {
             self._restRequest(
@@ -180,12 +182,13 @@ class CloudGenixSdk {
         });
     }
 
-    getElements() {
+    getElements(id) {
         var self = this;
         if (!self._loggedIn) throw "Please login() first";
 
         var url = self._endpoints.getEndpoint("elements");
         url = url.replace("%s", self.tenantId);
+        if (typeof(id) !== "undefined" && id !== null) url += "/" + id;
 
         return new Promise(function (resolve, reject) {
             self._restRequest(
@@ -211,7 +214,7 @@ class CloudGenixSdk {
         });
     }
 
-    getElementInterfaces(siteId, elementId) {
+    getElementInterfaces(siteId, elementId, id) {
         if (!siteId) throw "Site ID must not be empty";
         if (!elementId) throw "Element ID must not be empty";
 
@@ -222,6 +225,7 @@ class CloudGenixSdk {
         url = url.replace("%s", self.tenantId);
         url = url.replace("%s", siteId);
         url = url.replace("%s", elementId);
+        if (typeof(id) !== "undefined" && id !== null) url += "/" + id;
 
         return new Promise(function (resolve, reject) {
             self._restRequest(
@@ -285,12 +289,13 @@ class CloudGenixSdk {
         });
     }
 
-    getWanNetworks() {
+    getWanNetworks(id) {
         var self = this;
         if (!self._loggedIn) throw "Please login() first";
 
         var url = self._endpoints.getEndpoint("wannetworks");
         url = url.replace("%s", self.tenantId);
+        if (typeof(id) !== "undefined" && id !== null) url += "/" + id;
 
         return new Promise(function (resolve, reject) {
             self._restRequest(
@@ -316,7 +321,7 @@ class CloudGenixSdk {
         });
     }
 
-    getLanNetworks(siteId) {
+    getLanNetworks(siteId, id) {
         if (!siteId) throw "Site ID must not be empty";
 
         var self = this;
@@ -325,6 +330,7 @@ class CloudGenixSdk {
         var url = self._endpoints.getEndpoint("lannetworks");
         url = url.replace("%s", self.tenantId);
         url = url.replace("%s", siteId);
+        if (typeof(id) !== "undefined" && id !== null) url += "/" + id;
 
         return new Promise(function (resolve, reject) {
             self._restRequest(
@@ -350,12 +356,13 @@ class CloudGenixSdk {
         });
     }
 
-    getAppDefs() {
+    getAppDefs(id) {
         var self = this;
         if (!self._loggedIn) throw "Please login() first";
 
         var url = self._endpoints.getEndpoint("appdefs");
         url = url.replace("%s", self.tenantId);
+        if (typeof(id) !== "undefined" && id !== null) url += "/" + id;
 
         return new Promise(function (resolve, reject) {
             self._restRequest(
@@ -381,12 +388,13 @@ class CloudGenixSdk {
         });
     }
 
-    getPolicySets() {
+    getPolicySets(id) {
         var self = this;
         if (!self._loggedIn) throw "Please login() first";
 
         var url = self._endpoints.getEndpoint("policysets");
         url = url.replace("%s", self.tenantId);
+        if (typeof(id) !== "undefined" && id !== null) url += "/" + id;
 
         return new Promise(function (resolve, reject) {
             self._restRequest(
@@ -412,7 +420,7 @@ class CloudGenixSdk {
         });
     }
 
-    getPolicyRules(policySetId) {
+    getPolicyRules(policySetId, id) {
         if (!policySetId) throw "Policy set ID must not be empty";
 
         var self = this;
@@ -421,6 +429,7 @@ class CloudGenixSdk {
         var url = self._endpoints.getEndpoint("policyrules");
         url = url.replace("%s", self.tenantId);
         url = url.replace("%s", policySetId);
+        if (typeof(id) !== "undefined" && id !== null) url += "/" + id;
 
         return new Promise(function (resolve, reject) {
             self._restRequest(
@@ -446,12 +455,13 @@ class CloudGenixSdk {
         });
     }
 
-    getSecurityZones() {
+    getSecurityZones(id) {
         var self = this;
         if (!self._loggedIn) throw "Please login() first";
 
         var url = self._endpoints.getEndpoint("securityzones");
         url = url.replace("%s", self.tenantId);
+        if (typeof(id) !== "undefined" && id !== null) url += "/" + id;
 
         return new Promise(function (resolve, reject) {
             self._restRequest(
@@ -477,7 +487,7 @@ class CloudGenixSdk {
         });
     }
 
-    getSiteSecurityZones(siteId) {
+    getSiteSecurityZones(siteId, id) {
         if (!siteId) throw "Site ID must not be empty";
 
         var self = this;
@@ -486,6 +496,7 @@ class CloudGenixSdk {
         var url = self._endpoints.getEndpoint("sitesecurityzones");
         url = url.replace("%s", self.tenantId);
         url = url.replace("%s", siteId);
+        if (typeof(id) !== "undefined" && id !== null) url += "/" + id;
 
         return new Promise(function (resolve, reject) {
             self._restRequest(
@@ -511,12 +522,13 @@ class CloudGenixSdk {
         });
     }
 
-    getSecurityPolicySets() {
+    getSecurityPolicySets(id) {
         var self = this;
         if (!self._loggedIn) throw "Please login() first";
 
         var url = self._endpoints.getEndpoint("securitypolicysets");
         url = url.replace("%s", self.tenantId);
+        if (typeof(id) !== "undefined" && id !== null) url += "/" + id;
 
         return new Promise(function (resolve, reject) {
             self._restRequest(
@@ -542,7 +554,7 @@ class CloudGenixSdk {
         });
     }
 
-    getSecurityPolicyRules(secPolicySetId) {
+    getSecurityPolicyRules(secPolicySetId, id) {
         if (!secPolicySetId) throw "Security policy set ID must not be empty";
 
         var self = this;
@@ -551,6 +563,7 @@ class CloudGenixSdk {
         var url = self._endpoints.getEndpoint("securitypolicyrules");
         url = url.replace("%s", self.tenantId);
         url = url.replace("%s", secPolicySetId);
+        if (typeof(id) !== "undefined" && id !== null) url += "/" + id;
 
         return new Promise(function (resolve, reject) {
             self._restRequest(
@@ -576,7 +589,7 @@ class CloudGenixSdk {
         });
     }
 
-    getSiteWanInterfaces(siteId) {
+    getSiteWanInterfaces(siteId, id) {
         if (!siteId) throw "Site ID must not be empty";
 
         var self = this;
@@ -585,6 +598,7 @@ class CloudGenixSdk {
         var url = self._endpoints.getEndpoint("waninterfaces");
         url = url.replace("%s", self.tenantId);
         url = url.replace("%s", siteId);
+        if (typeof(id) !== "undefined" && id !== null) url += "/" + id;
 
         return new Promise(function (resolve, reject) {
             self._restRequest(
@@ -610,7 +624,7 @@ class CloudGenixSdk {
         });
     }
 
-    getSnmpAgents(siteId, elementId) {
+    getSnmpAgents(siteId, elementId, id) {
         if (!siteId) throw "Site ID must not be empty";
         if (!elementId) throw "Element ID must not be empty";
 
@@ -621,6 +635,7 @@ class CloudGenixSdk {
         url = url.replace("%s", self.tenantId);
         url = url.replace("%s", siteId);
         url = url.replace("%s", elementId);
+        if (typeof(id) !== "undefined" && id !== null) url += "/" + id;
 
         return new Promise(function (resolve, reject) {
             self._restRequest(
