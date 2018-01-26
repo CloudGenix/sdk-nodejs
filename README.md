@@ -12,10 +12,7 @@ The CloudGenix Controller is only accessible to CloudGenix customers with a vali
 - Support for Javascript promise
 - Added optional 'id' parameter to several methods (for instance, to retrieve only an individual site, element, etc)
 - Various fixes
-
-## Outstanding Items
-- Queries (metrics, top N, flow records) must be constructed manually and passed into appropriate methods
-
+ 
 ## Quickstart
 Refer to the Test.js file for a full examination of consuming the SDK.  The SDK can be initialized and instantiated rather quickly:
 ``` 
@@ -61,6 +58,9 @@ topnQuery["start_time"] = "2017-12-01T00:00:00.000Z";
 topnQuery["end_time"] = "2017-12-07T00:00:00.000Z";
 sdk.getTopN(topnQuery, cb);
 ```
+
+## Execution in the Browser
+We have tested the SDK with Browserify (http://browserify.org/) and it worked well.
 
 ## Version History
 Notes from previous versions (starting with v1.0.0) will be moved here.
