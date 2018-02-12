@@ -83,8 +83,8 @@ class CloudGenixSdk {
     }
 
     logout() {
-        if (!self._loggedIn) throw "Please login() first";
         var self = this;
+        if (!this._loggedIn) throw "Please login() first";
 
         return new Promise(function (resolve, reject) {
             self._restRequest(
