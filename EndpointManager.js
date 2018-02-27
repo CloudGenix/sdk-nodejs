@@ -31,7 +31,7 @@ class EndpointManager {
         this.addVersion("permissions", "v2.0");
         this.addVersion("profile", "v2.0");
         this.addVersion("flows_monitor", "v3.0");
-        this.addVersion("query_events", "v2.0");
+        this.addVersion("query_events", "v3.0");
 
         // static endpoints
         this.addEndpoint("login", "/%s/api/login");
