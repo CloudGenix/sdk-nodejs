@@ -9,10 +9,8 @@ For issues, please contact joel@cloudgenix.com or open a support ticket with dev
 The CloudGenix Controller is only accessible to CloudGenix customers with a valid login using an IP address that has been whitelisted.  Please contact us at one of the aforementioned methods if you need to have your IP addresses whitelisted.
 
 ## New
-- Support for Javascript promise
-- Added optional 'id' parameter to several methods (for instance, to retrieve only an individual site, element, etc)
-- Various fixes
- 
+- SAML login support via ```samlLoginStart()``` and ```samlLoginFinish()```
+
 ## Quickstart
 Refer to the Test.js file for a full examination of consuming the SDK.  The SDK can be initialized and instantiated rather quickly:
 ``` 
@@ -67,3 +65,7 @@ Notes from previous versions (starting with v1.0.0) will be moved here.
 
 v1.0.x
 - Initial release
+- Support for Javascript promise
+- Added optional 'id' parameter to several methods (for instance, to retrieve only an individual site, element, etc)
+- Various fixes
+

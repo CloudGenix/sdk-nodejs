@@ -1,7 +1,7 @@
 /*
 
     CloudGenix Controller SDK
-    (c) 2017 CloudGenix, Inc.
+    (c) 2018 CloudGenix, Inc.
     All Rights Reserved
 
     https://www.cloudgenix.com
@@ -23,11 +23,13 @@ class CloudGenixSdk {
     // <editor-fold desc="Constructors and Factories">
 
     constructor(email, password, debug) {
-        if (!email || 0 === email.length) throw "Email is empty";
-        if (!password || 0 === password.length) throw "Password is empty";
+        if (!email || 0 === email.length) throw "Email is empty"; 
 
         this._email = email;
         this._password = password;
+        this._samlRequestId = null;
+        this._samlUrl = null;
+
         this._hostname = "api.cloudgenix.com";
         this._port = 443;
         // this._hostname = "localhost";
@@ -51,6 +53,8 @@ class CloudGenixSdk {
 
     login() {
         var self = this;
+        if (!self._email || 0 === self._email.length) throw "Email is empty";
+        if (!self._password || 0 === self._password.length) throw "Password is empty";
 
         return new Promise(function(resolve, reject) {
             self._login(function(data, err) {
@@ -77,6 +81,57 @@ class CloudGenixSdk {
                 }
                 else {
                     reject(Error("Unable to login to controller"));
+                }
+            });
+        });
+    }
+
+    loginSamlStart() {
+        var self = this;
+
+        return new Promise(function(resolve, reject) {
+            self._log("CloudGenix SDK SAML login started");
+            self._loginSamlStart(function(data, err) {
+                if (data) {
+                    self._log("CloudGenix SDK SAML retrieved login URL " + self._samlUrl + " for request ID " + self._samlRequestId);
+                    resolve(self._samlUrl);
+                }
+                else {
+                    reject(Error("Unable to retrieve SAML login details"));
+                }
+            });
+        });
+    }
+
+    loginSamlFinish() {
+        var self = this;
+
+        return new Promise(function(resolve, reject) {
+            self._log("CloudGenix SDK SAML login attempting to finish");
+            self._loginSamlFinish(function(data, err) {
+                if (data) {
+                    self._log("CloudGenix SDK SAML succeeded");
+                    self._retrieveProfile(function(data, err) {
+                        if (data) {
+                            self._log("CloudGenix SDK retrieved tenant ID: " + self.tenantId);
+                            self._retrievePermissions(function(data, err) {
+                                if (data) {
+                                    self._log("CloudGenix SDK retrieved permissions");
+                                    self._loggedIn = true;
+                                    resolve(true);
+                                }
+                                else {
+                                    reject(Error("Unable to retrieve permissions"));
+                                }
+                            });
+                        }
+                        else {
+                            reject(Error("Unable to retrieve tenant ID"));
+                        }
+                    });
+                }
+                else {
+                    reject(Error("Unable to retrieve SAML login details"));
                 }
             });
         });
@@ -935,6 +990,99 @@ class CloudGenixSdk {
                 }
                 else {
                     self._log("login unable to login: " + err);
+                    callback(null, true);
+                }
+            }
+        );
+    }
+
+    _loginSamlStart(callback) {
+        var self = this;
+        var authBody = {};
+        authBody["email"] = this._email; 
+
+        var refererUrl = "";
+        if (self._ssl) refererUrl = "https://";
+        else refererUrl = "http://";
+        refererUrl += self._hostname + ":" + self._port + "/v2.0/api/login";
+
+        var headers = {};
+        headers["Referer"] = refererUrl;
+
+        this._restRequest(
+            "POST",
+            this._endpoints.getEndpoint("login"),
+            this._hostname,
+            this._port,
+            headers,
+            "application/json",
+            JSON.stringify(authBody),
+            this._debug,
+            function(data, err) {
+                if (data) {
+                    self._log("loginSaml response data: " + data);
+
+                    var resp = JSON.parse(data);
+                    if ("url" in resp && "requestId" in resp) {
+                        // set auth headers
+                        self._samlRequestId = resp["requestId"];
+                        self._samlUrl = resp["urlpath"];
+                        self._log("loginSaml SAML URL set to " + self._samlUrl + " for request ID " + self._samlRequestId);
+                        callback(true, null);
+                    }
+                    else {
+                        throw "SAML details not found in login response";
+                    }
+                }
+                else {
+                    self._log("loginSaml unable to login: " + err);
+                    callback(null, true);
+                }
+            }
+        );
+    }
+
+    _loginSamlFinish(callback) {
+        var self = this;
+        var authBody = {};
+        authBody["email"] = this._email; 
+        authBody["requestId"] = this._samlRequestId;
+
+        var refererUrl = "";
+        if (self._ssl) refererUrl = "https://";
+        else refererUrl = "http://";
+        refererUrl += self._hostname + ":" + self._port + "/v2.0/api/login";
+
+        var headers = {};
+        headers["Referer"] = refererUrl;
+
+        this._restRequest(
+            "POST",
+            this._endpoints.getEndpoint("login"),
+            this._hostname,
+            this._port,
+            headers,
+            "application/json",
+            JSON.stringify(authBody),
+            this._debug,
+            function(data, err) {
+                if (data) {
+                    self._log("loginSamlFinish response data: " + data);
+
+                    var resp = JSON.parse(data);
+                    if ("x_auth_token" in resp) {
+                        // set auth headers
+                        self.authToken = resp["x_auth_token"];
+                        self._authHeaders["x-auth-token"] = self.authToken;
+                        self._log("loginSamlFinish set auth token to: " + self.authToken);
+                        callback(true, null);
+                    }
+                    else {
+                        throw "Auth token not found in login response";
+                    }
+                }
+                else {
+                    self._log("loginSamlFinish unable to login: " + err);
                     callback(null, true);
                 }
             }
