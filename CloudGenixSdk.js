@@ -22,11 +22,10 @@ class CloudGenixSdk {
 
     // <editor-fold desc="Constructors and Factories">
 
-    constructor(email, password, debug) {
-        if (!email || 0 === email.length) throw "Email is empty"; 
-
+    constructor(email, password, token, debug) {
         this._email = email;
         this._password = password;
+        this._token = token;
         this._samlRequestId = null;
         this._samlUrl = null;
 
@@ -44,7 +43,14 @@ class CloudGenixSdk {
         this._loggedIn = false;
 
         this._endpointManager = new EndpointManager();
-        this._log("CloudGenix SDK initialized with email " + this._email + " host " + this._hostname + ":" + this._port);
+
+        this._log("CloudGenix SDK initialized with host " + this._hostname + ":" + this._port);
+
+        if (this._token && this._token.length > 0) 
+        {
+            this.authToken = this._token;
+            this._log("Using static authentication token");
+        } 
     }
 
     // </editor-fold>
@@ -83,6 +89,33 @@ class CloudGenixSdk {
                     reject(Error("Unable to login to controller"));
                 }
             });
+        });
+    }
+
+    loginWithToken() {
+        var self = this;
+        if (!self._token || 0 === self._token.length) throw "Token is empty";
+        self._authHeaders["x-auth-token"] = self.authToken;
+                        
+        return new Promise(function(resolve, reject) { 
+            self._retrieveProfile(function(data, err) {
+                if (data) {
+                    self._log("CloudGenix SDK retrieved tenant ID: " + self.tenantId);
+                    self._retrievePermissions(function(data, err) {
+                        if (data) {
+                            self._log("CloudGenix SDK retrieved permissions");
+                            self._loggedIn = true;
+                            resolve(true);
+                        }
+                        else {
+                            reject(Error("Unable to retrieve permissions"));
+                        }
+                    });
+                }
+                else {
+                    reject(Error("Unable to retrieve tenant ID"));
+                }
+            });  
         });
     }
 
