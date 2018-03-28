@@ -919,6 +919,75 @@ class CloudGenixSdk {
         });
     }
 
+    getAllEvents(query) {
+        if (!query) throw "Query must not be empty";
+        if (!global._eventsResponse) {
+            global._eventsResponse = {
+                _offset: null,
+                _status_code: 200,
+                included_count: 0,
+                items: [],
+                total_count: 0
+            };
+        }
+        
+        global._eventsQuery = query;
+        
+        var self = this;
+        if (!self._loggedIn) throw "Please login() first";
+
+        // console.log("getAllEvents entering");
+
+        return new Promise(function(resolve, reject) {
+            function success(data) {
+                var resp = JSON.parse(data);
+                if (!resp 
+                    || !resp["items"] 
+                    || resp["items"] === null 
+                    || resp["items"] === undefined 
+                    || resp["items"].length < 1) {
+                    var ret = global._eventsResponse;
+                    global._eventsResponse = null;
+                    global._eventsQuery = null;
+                    // console.log("getAllEvents finished with no items");
+                    resolve(ret);
+                }
+ 
+                // console.log("getAllEvents received data with " + resp.items.length + " entries");
+
+                for (var i = 0; i < resp["items"].length; i++) {
+                    global._eventsResponse.items.push(resp["items"][i]);
+                }
+
+                global._eventsResponse["included_count"] += resp["items"].length;
+                global._eventsResponse["total_count"] += resp["items"].length;
+                global._eventsResponse["_status_code"] = resp["_status_code"];
+                global._eventsResponse["_offset"] = resp["_offset"];
+                global._eventsQuery["_offset"] = resp["_offset"];
+
+                if (resp["_offset"] !== null && resp["_offset"] !== undefined) {
+                    // console.log("getAllEvents offset found: " + resp["_offset"]);
+                    resolve(self.getAllEvents(global._eventsQuery));
+                }
+                else {
+                    var ret = global._eventsResponse;
+                    global._eventsResponse = null;
+                    global._eventsQuery = null;
+                    // console.log("getAllEvents finished, no offset found, returning " + ret.items.length + " entries");
+                    resolve(ret);
+                }
+            };
+
+            function failure(data) {
+                var resp = JSON.parse(data);
+                // console.log("getAllEvents error received: " + data);
+                reject(data);
+            }
+
+            self.getEvents(global._eventsQuery).then(success, failure);
+        });
+    }
+
     // </editor-fold>
 
     // <editor-fold desc="Internal Methods">
