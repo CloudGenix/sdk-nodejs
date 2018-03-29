@@ -940,11 +940,11 @@ class CloudGenixSdk {
 
         return new Promise(function(resolve, reject) {
             function success(data) {
-                if (!resp 
-                    || !resp["items"] 
-                    || resp["items"] === null 
-                    || resp["items"] === undefined 
-                    || resp["items"].length < 1) {
+                if (!data 
+                    || !data["items"] 
+                    || data["items"] === null 
+                    || data["items"] === undefined 
+                    || data["items"].length < 1) {
                     var ret = global._eventsResponse;
                     global._eventsResponse = null;
                     global._eventsQuery = null;
@@ -952,20 +952,20 @@ class CloudGenixSdk {
                     resolve(ret);
                 }
  
-                // console.log("getAllEvents received data with " + resp.items.length + " entries");
+                // console.log("getAllEvents received data with " + data.items.length + " entries");
 
-                for (var i = 0; i < resp["items"].length; i++) {
-                    global._eventsResponse.items.push(resp["items"][i]);
+                for (var i = 0; i < data["items"].length; i++) {
+                    global._eventsResponse.items.push(data["items"][i]);
                 }
 
-                global._eventsResponse["included_count"] += resp["items"].length;
-                global._eventsResponse["total_count"] += resp["items"].length;
-                global._eventsResponse["_status_code"] = resp["_status_code"];
-                global._eventsResponse["_offset"] = resp["_offset"];
-                global._eventsQuery["_offset"] = resp["_offset"];
+                global._eventsResponse["included_count"] += data["items"].length;
+                global._eventsResponse["total_count"] += data["items"].length;
+                global._eventsResponse["_status_code"] = data["_status_code"];
+                global._eventsResponse["_offset"] = data["_offset"];
+                global._eventsQuery["_offset"] = data["_offset"];
 
-                if (resp["_offset"] !== null && resp["_offset"] !== undefined) {
-                    // console.log("getAllEvents offset found: " + resp["_offset"]);
+                if (data["_offset"] !== null && data["_offset"] !== undefined) {
+                    // console.log("getAllEvents offset found: " + data["_offset"]);
                     resolve(self.getAllEvents(global._eventsQuery));
                 }
                 else {
