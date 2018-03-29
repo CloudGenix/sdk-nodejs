@@ -227,7 +227,7 @@ class CloudGenixSdk {
                 function (data, err) {
                     if (data) {
                         self._log("getContexts response data: " + data);
-                        resolve(data);
+                        resolve(JSON.parse(data));
                     }
                     else {
                         self._log("getContexts unable to retrieve contexts: " + err);
@@ -259,7 +259,7 @@ class CloudGenixSdk {
                 function(data, err) {
                     if (data) {
                         self._log("getSites response data: " + data);
-                        resolve(data);
+                        resolve(JSON.parse(data));
                     }
                     else {
                         self._log("getSites unable to retrieve sites: " + err);
@@ -291,7 +291,7 @@ class CloudGenixSdk {
                 function(data, err) {
                     if (data) {
                         self._log("getElements response data: " + data);
-                        resolve(data);
+                        resolve(JSON.parse(data));
                     }
                     else {
                         self._log("getElements unable to retrieve elements: " + err);
@@ -328,7 +328,7 @@ class CloudGenixSdk {
                 function(data, err) {
                     if (data) {
                         self._log("getElementInterfaces response data: " + data);
-                        resolve(data);
+                        resolve(JSON.parse(data));
                     }
                     else {
                         self._log("getElementInterfaces unable to retrieve elements: " + err);
@@ -366,7 +366,7 @@ class CloudGenixSdk {
                 function(data, err) {
                     if (data) {
                         self._log("getElementInterfaceStatus response data: " + data);
-                        resolve(data);
+                        resolve(JSON.parse(data));
                     }
                     else {
                         self._log("getElementInterfaceStatus unable to retrieve element interface status: " + err);
@@ -398,7 +398,7 @@ class CloudGenixSdk {
                 function(data, err) {
                     if (data) {
                         self._log("getWanNetworks response data: " + data);
-                        resolve(data);
+                        resolve(JSON.parse(data));
                     }
                     else {
                         self._log("getWanNetworks unable to retrieve WANs: " + err);
@@ -433,7 +433,7 @@ class CloudGenixSdk {
                 function(data, err) {
                     if (data) {
                         self._log("getLanNetworks response data: " + data);
-                        resolve(data);
+                        resolve(JSON.parse(data));
                     }
                     else {
                         self._log("getLanNetworks unable to retrieve LANs: " + err);
@@ -465,7 +465,7 @@ class CloudGenixSdk {
                 function(data, err) {
                     if (data) {
                         self._log("getAppDefs response data: " + data);
-                        resolve(data);
+                        resolve(JSON.parse(data));
                     }
                     else {
                         self._log("getAppDefs unable to retrieve application definitions: " + err);
@@ -497,7 +497,7 @@ class CloudGenixSdk {
                 function(data, err) {
                     if (data) {
                         self._log("getPolicySets response data: " + data);
-                        resolve(data);
+                        resolve(JSON.parse(data));
                     }
                     else {
                         self._log("getPolicySets unable to retrieve policy sets: " + err);
@@ -532,7 +532,7 @@ class CloudGenixSdk {
                 function(data, err) {
                     if (data) {
                         self._log("getPolicyRules response data: " + data);
-                        resolve(data);
+                        resolve(JSON.parse(data));
                     }
                     else {
                         self._log("getPolicyRules unable to retrieve policy rules: " + err);
@@ -564,7 +564,7 @@ class CloudGenixSdk {
                 function(data, err) {
                     if (data) {
                         self._log("getSecurityZones response data: " + data);
-                        resolve(data);
+                        resolve(JSON.parse(data));
                     }
                     else {
                         self._log("getSecurityZones unable to retrieve security zones: " + err);
@@ -599,7 +599,7 @@ class CloudGenixSdk {
                 function(data, err) {
                     if (data) {
                         self._log("getSiteSecurityZones response data: " + data);
-                        resolve(data);
+                        resolve(JSON.parse(data));
                     }
                     else {
                         self._log("getSiteSecurityZones unable to retrieve security zones: " + err);
@@ -631,7 +631,7 @@ class CloudGenixSdk {
                 function(data, err) {
                     if (data) {
                         self._log("getSecurityPolicySets response data: " + data);
-                        resolve(data);
+                        resolve(JSON.parse(data));
                     }
                     else {
                         self._log("getSecurityPolicySets unable to retrieve security policy sets: " + err);
@@ -666,7 +666,7 @@ class CloudGenixSdk {
                 function(data, err) {
                     if (data) {
                         self._log("getSecurityPolicyRules response data: " + data);
-                        resolve(data);
+                        resolve(JSON.parse(data));
                     }
                     else {
                         self._log("getSecurityPolicyRules unable to retrieve security policy rules: " + err);
@@ -701,7 +701,7 @@ class CloudGenixSdk {
                 function(data, err) {
                     if (data) {
                         self._log("getSiteWanInterfaces response data: " + data);
-                        resolve(data);
+                        resolve(JSON.parse(data));
                     }
                     else {
                         self._log("getSiteWanInterfaces unable to retrieve site WAN interfaces: " + err);
@@ -738,7 +738,7 @@ class CloudGenixSdk {
                 function(data, err) {
                     if (data) {
                         self._log("getSnmpAgents response data: " + data);
-                        resolve(data);
+                        resolve(JSON.parse(data));
                     }
                     else {
                         self._log("getSnmpAgents unable to retrieve SNMP agents: " + err);
@@ -776,7 +776,7 @@ class CloudGenixSdk {
                 function(data, err) {
                     if (data) {
                         self._log("getSiteTopology response data: " + data);
-                        resolve(data);
+                        resolve(JSON.parse(data));
                     }
                     else {
                         self._log("getSiteTopology unable to retrieve site topology: " + err);
@@ -809,7 +809,7 @@ class CloudGenixSdk {
                 function(data, err) {
                     if (data) {
                         self._log("getMetrics response data: " + data);
-                        resolve(data);
+                        resolve(JSON.parse(data));
                     }
                     else {
                         self._log("getMetrics unable to retrieve metrics: " + err);
@@ -842,7 +842,7 @@ class CloudGenixSdk {
                 function(data, err) {
                     if (data) {
                         self._log("getTopN response data: " + data);
-                        resolve(data);
+                        resolve(JSON.parse(data));
                     }
                     else {
                         self._log("getTopN unable to retrieve top N data: " + err);
@@ -875,7 +875,7 @@ class CloudGenixSdk {
                 function(data, err) {
                     if (data) {
                         self._log("getFlows response data: " + data);
-                        resolve(data);
+                        resolve(JSON.parse(data));
                     }
                     else {
                         self._log("getFlows unable to retrieve flows: " + err);
@@ -908,7 +908,7 @@ class CloudGenixSdk {
                 function(data, err) {
                     if (data) {
                         self._log("getEvents response data: " + data);
-                        resolve(data);
+                        resolve(JSON.parse(data));
                     }
                     else {
                         self._log("getEvents unable to retrieve events: " + err);
