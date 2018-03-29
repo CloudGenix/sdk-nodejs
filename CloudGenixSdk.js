@@ -940,7 +940,6 @@ class CloudGenixSdk {
 
         return new Promise(function(resolve, reject) {
             function success(data) {
-                var resp = JSON.parse(data);
                 if (!resp 
                     || !resp["items"] 
                     || resp["items"] === null 
@@ -979,7 +978,6 @@ class CloudGenixSdk {
             };
 
             function failure(data) {
-                var resp = JSON.parse(data);
                 // console.log("getAllEvents error received: " + data);
                 reject(data);
             }
