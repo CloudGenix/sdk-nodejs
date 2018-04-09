@@ -1,7 +1,7 @@
 // get all events test
 
-var cg = require('./CloudGenixSdk.js');
-var sdk = new cg('[email]', '[password]', null, false);
+var cg = require("./CloudGenixSdk.js");
+var sdk = new cg("[email]", "[password]", null, false);
 sdk.login().then(console.log);
 var enumerate = function(data) { console.log("Data: " + JSON.stringify(data)) };
 
@@ -12,5 +12,6 @@ query["view"] = { "summary": false };
 query["severity"] = [ "critical", "major", "minor" ];
 query["_offset"] = null;
 query["query"] = { "type": [ "alarm" ] };
+
 sdk.getAllEvents(query).then(enumerate);
 

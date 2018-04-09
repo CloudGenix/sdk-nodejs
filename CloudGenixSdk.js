@@ -40,7 +40,11 @@ class CloudGenixSdk {
 
         this.tenantId = null;
         this.authToken = null;
+        this.operatorId = null;
+
         this._loggedIn = false;
+        this._clients = null;
+        this._clientPerms = null;
 
         this._endpointManager = new EndpointManager();
 
@@ -204,6 +208,168 @@ class CloudGenixSdk {
 
     getAllEndpoints() {
         return this._endpoints.getAllEndpoints();
+    }
+
+    getClients() {
+        var self = this;
+        if (!self._loggedIn) throw "Please login() first";
+        if (self.operatorId === undefined || self.operatorId === null) {
+            throw "Only available to ESP/MSP accounts";
+        }
+
+        var clientsUrl = self._endpoints.getEndpoint("clients_t");
+        if (!clientsUrl || clientsUrl === undefined || clientsUrl === null) {
+            throw "Only available to ESP/MSP accounts";
+        }
+
+        clientsUrl = clientsUrl.replace("%s", self.tenantId); 
+
+        return new Promise(function (resolve, reject) {
+            self._restRequest(
+                "GET",
+                clientsUrl,
+                self._hostname,
+                self._port,
+                self._authHeaders,
+                "application/json",
+                null,
+                self._debug,
+                function(data, err) {
+                    if (data) {
+                        self._log("getClients clients response data: " + data);
+                        self._clients = JSON.parse(data);
+
+                        // now get clients to which we have permissions
+                        // permissions_clients_d: '/v2.0/api/tenants/%s/operators/%s/clients/permissions',
+
+                        var permsUrl = self._endpoints.getEndpoint("permissions_clients_d");
+                        if (!permsUrl || permsUrl === undefined || permsUrl === null) {
+                            throw "Only available to ESP/MSP accounts";
+                        }
+
+                        permsUrl = permsUrl.replace("%s", self.tenantId);
+                        permsUrl = permsUrl.replace("%s", self.operatorId);
+
+                        self._restRequest(
+                            "GET",
+                            permsUrl,
+                            self._hostname, 
+                            self._port,
+                            self._authHeaders,
+                            "application/json",
+                            null,
+                            self._debug,
+                            function(data, err) {
+                                if (data) {
+                                    self._log("getClients permissions response data: " + data);
+                                    self._clientPerms = JSON.parse(data);
+
+                                    // now create a new dictionary with clients to which
+                                    // we have permissions
+
+                                    var clients = [];
+
+                                    for (var i = 0; i < self._clients.items.length; i++) {
+                                        for (var j = 0; j < self._clientPerms.items.length; j++) {
+                                            if (self._clients.items[i].tenant_id
+                                                === self._clientPerms.items[j].client_id) {
+                                                var currClient = {
+                                                    "client_id": self._clientPerms.items[j].client_id,
+                                                    "name": self._clients.items[i].name
+                                                };
+                                                self._log("getClients adding ID " + 
+                                                    currClient.client_id + ": " + 
+                                                    currClient.name);
+
+                                                clients.push(currClient);
+                                                break;
+                                            }
+                                        }
+                                    }
+
+                                    self._log("getClients returning " + clients.length + " clients");
+                                    resolve(clients);
+                                }
+                                else {
+                                    self._log("getClients unable to retrieve client permissions: " + err);
+                                    reject(Error(err));                                    
+                                }
+                            }
+                        ); 
+                    }
+                    else {
+                        self._log("getClients unable to retrieve clients list: " + err);
+                        reject(Error(err));
+                    }
+                }
+            );
+        });
+    }
+
+    emulateClient(id) {
+        var self = this;
+        if (!self._loggedIn) throw "Please login() first";
+        if (!id) throw "ID must be supplied";
+        if (self.operatorId === undefined || self.operatorId === null) {
+            throw "Only available to ESP/MSP accounts";
+        }
+
+        var url = self._endpoints.getEndpoint("login_clients");
+        url = url.replace("%s", self.tenantId);
+        url = url.replace("%s", id);
+        var reqBody = { };
+
+        return new Promise(function (resolve, reject) {
+            self._restRequest(
+                "POST",
+                url,
+                self._hostname,
+                self._port,
+                self._authHeaders,
+                "application/json",
+                JSON.stringify(reqBody),
+                self._debug,
+                function (data, err) {
+                    if (data) {
+                        self._log("emulateClient response data: " + data);
+                        var resp = JSON.parse(data);
+                        if ("x_auth_token" in resp) {
+                            // set auth headers
+                            self.authToken = resp["x_auth_token"];
+                            self._authHeaders["x-auth-token"] = self.authToken;
+                            self._log("emulateClient set auth token to: " + self.authToken + " for client ID " + id);
+                        }
+                        else {
+                            throw "No auth token found for client ID " + id;
+                        }
+
+                        self._log("CloudGenix SDK login succeeded for client ID " + id);
+                        self._retrieveProfile(function(data, err) {
+                            if (data) {
+                                self._log("CloudGenix SDK retrieved tenant ID: " + self.tenantId);
+                                self._retrievePermissions(function(data, err) {
+                                    if (data) {
+                                        self._log("CloudGenix SDK retrieved permissions");
+                                        self._loggedIn = true;
+                                        resolve(true);
+                                    }
+                                    else {
+                                        reject(Error("Unable to retrieve permissions"));
+                                    }
+                                });
+                            }
+                            else {
+                                reject(Error("Unable to retrieve tenant ID"));
+                            }
+                        });
+                    }
+                    else {
+                        self._log("emulateClient unable to login as client: " + err);
+                        reject(Error(err));
+                    }
+                }
+            );
+        });
     }
 
     getContexts(id) {
@@ -986,6 +1152,42 @@ class CloudGenixSdk {
         });
     }
 
+    query(objType, params) {
+        if (!objType) throw "Object type must not be empty";
+        if (!params) throw "Params must not be empty";
+
+        var self = this;
+        if (!self._loggedIn) throw "Please login() first";
+
+        var url = self._endpoints.getEndpoint(objType);
+        if (!objType) throw "Unknown object type";
+        url = url.replace("%s", self.tenantId);
+        url += "/query";
+
+        return new Promise(function (resolve, reject) {
+            self._restRequest(
+                "POST",
+                url,
+                self._hostname,
+                self._port,
+                self._authHeaders,
+                "application/json",
+                JSON.stringify(params),
+                self._debug,
+                function(data, err) {
+                    if (data) {
+                        self._log("query response data: " + data);
+                        resolve(JSON.parse(data));
+                    }
+                    else {
+                        self._log("query unable to retrieve response: " + err);
+                        reject(Error(err));
+                    }
+                }
+            );
+        });
+    }
+
     // </editor-fold>
 
     // <editor-fold desc="Internal Methods">
@@ -1003,6 +1205,8 @@ class CloudGenixSdk {
 
         if (!headers) headers = {};
         if (data) headers["content-length"] = data.length;
+        else headers["content-length"] = 0;
+
         if (contentType) headers["content-type"] = contentType;
 
         var options = {
@@ -1208,6 +1412,12 @@ class CloudGenixSdk {
                     if ("tenant_id" in resp) {
                         self.tenantId = resp["tenant_id"];
                         self._log("retrieveProfile set tenant ID to: " + self.tenantId);
+
+                        if (resp["id"] !== undefined && resp["id"] !== null) {
+                            self.operatorId = resp["id"];
+                            self._log("retrieveProfile set operator ID to: " + self.operatorId);
+                        }
+
                         callback("Success", null);
                     }
                     else {

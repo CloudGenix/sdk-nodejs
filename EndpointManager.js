@@ -31,7 +31,7 @@ class EndpointManager {
         this.addVersion("permissions", "v2.0");
         this.addVersion("profile", "v2.0");
         this.addVersion("flows_monitor", "v3.0");
-        this.addVersion("query_events", "v3.0");
+        this.addVersion("query_events", "v3.0"); 
 
         // static endpoints
         this.addEndpoint("login", "/%s/api/login");
@@ -39,7 +39,7 @@ class EndpointManager {
         this.addEndpoint("permissions", "/%s/api/permissions");
         this.addEndpoint("profile", "/%s/api/profile");
         this.addEndpoint("flows_monitor", "/%s/api/tenants/%s/monitor/flows");
-        this.addEndpoint("query_events", "/%s/api/tenants/%s/events/query");
+        this.addEndpoint("query_events", "/%s/api/tenants/%s/events/query"); 
     }
 
     // </editor-fold>

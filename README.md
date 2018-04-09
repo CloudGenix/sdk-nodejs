@@ -9,7 +9,7 @@ For issues, please contact joel@cloudgenix.com or open a support ticket with dev
 The CloudGenix Controller is only accessible to CloudGenix customers with a valid login using an IP address that has been whitelisted.  Please contact us at one of the aforementioned methods if you need to have your IP addresses whitelisted.
 
 ## New
-- Support for authentication with static auth tokens (use ```loginWithToken()```).
+- Support for ESP/MSP login, use ```getClients()``` followed by ```emulateClient(id)```.
 
 ## Quickstart
 Refer to the Test.js file for a full examination of consuming the SDK.  The SDK can be initialized and instantiated rather quickly:
@@ -70,4 +70,5 @@ v1.0.x
 - Added optional 'id' parameter to several methods (for instance, to retrieve only an individual site, element, etc)
 - Various fixes
 - SAML login support via ```samlLoginStart()``` and ```samlLoginFinish()```
+- Support for authentication with static auth tokens (use ```loginWithToken()```).
 
