@@ -1152,6 +1152,42 @@ class CloudGenixSdk {
         });
     }
 
+    acknowledgeEvent(event) {
+        if (!event) throw "Event object must not be empty";
+        if (!event.id) throw "Event object does not contain ID";
+        event["acknowledged"] = true;
+        
+        var self = this;
+        if (!self._loggedIn) throw "Please login() first";
+
+        var url = self._endpoints.getEndpoint("events");
+        url = url.replace("%s", self.tenantId);
+        url += "/" + event.id;
+
+        return new Promise(function (resolve, reject) {
+            self._restRequest(
+                "PUT",
+                url,
+                self._hostname,
+                self._port,
+                self._authHeaders,
+                "application/json",
+                JSON.stringify(event),
+                self._debug,
+                function(data, err) {
+                    if (data) {
+                        self._log("acknowledgeEvent response data: " + data);
+                        resolve(JSON.parse(data));
+                    }
+                    else {
+                        self._log("acknowledgeEvent unable to acknowledge event: " + err);
+                        reject(Error(err));
+                    }
+                }
+            );
+        });
+    }
+
     query(objType, params) {
         if (!objType) throw "Object type must not be empty";
         if (!params) throw "Params must not be empty";
