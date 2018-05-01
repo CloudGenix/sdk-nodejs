@@ -8,8 +8,8 @@ For issues, please contact joel@cloudgenix.com or open a support ticket with dev
 ## Before You Begin
 The CloudGenix Controller is only accessible to CloudGenix customers with a valid login using an IP address that has been whitelisted.  Please contact us at one of the aforementioned methods if you need to have your IP addresses whitelisted.
 
-## New
-- Support for ESP/MSP login, use ```getClients()``` followed by ```emulateClient(id)```.
+## New in v1.1.3
+- Support for Events API v3.1, which includes the ```acknowledgeEvent(event)``` API and support for adding ```include_acknowledged: [bool]``` to query in ```getEvents(query)```
 
 ## Quickstart
 Refer to the Test.js file for a full examination of consuming the SDK.  The SDK can be initialized and instantiated rather quickly:
@@ -64,11 +64,12 @@ We have tested the SDK with Browserify (http://browserify.org/) and it worked we
 ## Version History
 Notes from previous versions (starting with v1.0.0) will be moved here.
 
-v1.0.x
+v1.x
 - Initial release
 - Support for Javascript promise
 - Added optional 'id' parameter to several methods (for instance, to retrieve only an individual site, element, etc)
 - Various fixes
 - SAML login support via ```samlLoginStart()``` and ```samlLoginFinish()```
 - Support for authentication with static auth tokens (use ```loginWithToken()```).
+- Support for ESP/MSP login, use ```getClients()``` followed by ```emulateClient(id)```.
 
