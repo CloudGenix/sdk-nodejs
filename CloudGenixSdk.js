@@ -181,10 +181,10 @@ class CloudGenixSdk {
         return new Promise(function (resolve, reject) {
             self._restRequest(
                 "GET",
-                this._endpoints.getEndpoint("logout"),
-                this._hostname,
-                this._port,
-                this._authHeaders,
+                self._endpoints.getEndpoint("logout"),
+                self._hostname,
+                self._port,
+                self._authHeaders,
                 "application/json",
                 null,
                 this._debug,
