@@ -187,7 +187,7 @@ class CloudGenixSdk {
                 self._authHeaders,
                 "application/json",
                 null,
-                this._debug,
+                self._debug,
                 function(data, err) {
                     if (data) {
                         self._log("logout response data: " + data);
