@@ -6,7 +6,7 @@ NodeJS software development kit and test application for the CloudGenix Controll
 For issues, please contact joel@cloudgenix.com or open a support ticket with developers@cloudgenix.com.  We can also be found on the NetworkToCode Slack #cloudgenix channel at http://slack.networktocode.com.
 
 ## Before You Begin
-The CloudGenix Controller is only accessible to CloudGenix customers with a valid login using an IP address that has been whitelisted.  Please contact us at one of the aforementioned methods if you need to have your IP addresses whitelisted.
+The CloudGenix Controller is only accessible to CloudGenix customers with a valid login using an IP address that is in the list of allowed IPs. Please contact us at one of the aforementioned methods if you need to have your IP addresses added to the list of allowed IPs.
 
 ## New in v1.1.3
 - Support for Events API v3.1, which includes the ```acknowledgeEvent(event)``` API and support for adding ```include_acknowledged: [bool]``` to query in ```getEvents(query)```
